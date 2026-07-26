@@ -1,0 +1,526 @@
+.radius-app {
+    --radius-bg: #f4f7fb;
+    --radius-card: #ffffff;
+    --radius-ink: #172033;
+    --radius-muted: #657089;
+    --radius-line: #dfe5ef;
+    --radius-primary: #2563eb;
+    --radius-success: #0f9f6e;
+    --radius-danger: #dc3545;
+    --radius-warning: #d97706;
+    --radius-sql: #7c3aed;
+    box-sizing: border-box;
+    width: min(1460px, calc(100% - 32px));
+    margin: 24px auto 48px;
+    color: var(--radius-ink);
+}
+
+.radius-app *,
+.radius-app *::before,
+.radius-app *::after {
+    box-sizing: border-box;
+}
+
+.radius-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    overflow: hidden;
+    position: relative;
+    padding: 30px 34px;
+    border-radius: 20px;
+    color: #fff;
+    background:
+        radial-gradient(circle at 85% 20%, rgba(56, 189, 248, .30), transparent 32%),
+        linear-gradient(135deg, #172554 0%, #1d4ed8 58%, #0284c7 100%);
+    box-shadow: 0 18px 42px rgba(30, 64, 175, .22);
+}
+
+.radius-hero::after {
+    content: "";
+    position: absolute;
+    width: 220px;
+    height: 220px;
+    right: -70px;
+    bottom: -120px;
+    border: 28px solid rgba(255, 255, 255, .08);
+    border-radius: 50%;
+}
+
+.radius-eyebrow,
+.radius-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--radius-muted);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+}
+
+.radius-hero .radius-eyebrow {
+    color: #bfdbfe;
+}
+
+.radius-hero h1 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(26px, 3vw, 40px);
+    font-weight: 800;
+    line-height: 1.15;
+}
+
+.radius-hero p {
+    margin: 10px 0 0;
+    color: #dbeafe;
+    font-size: 15px;
+}
+
+.radius-version {
+    z-index: 1;
+    flex: 0 0 auto;
+    padding: 8px 13px;
+    border: 1px solid rgba(255, 255, 255, .28);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .12);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.radius-summary {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin: 16px 0;
+}
+
+.radius-stat {
+    min-height: 92px;
+    padding: 18px 20px;
+    border: 1px solid var(--radius-line);
+    border-top: 4px solid #94a3b8;
+    border-radius: 14px;
+    background: var(--radius-card);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .05);
+}
+
+.radius-stat span {
+    display: block;
+    color: var(--radius-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.radius-stat strong {
+    display: block;
+    margin-top: 6px;
+    color: var(--radius-ink);
+    font-size: 26px;
+    line-height: 1;
+}
+
+.radius-stat-success { border-top-color: var(--radius-success); }
+.radius-stat-danger { border-top-color: var(--radius-danger); }
+.radius-stat-warning { border-top-color: var(--radius-warning); }
+.radius-stat-sql { border-top-color: var(--radius-sql); }
+
+.radius-panel {
+    margin-top: 16px;
+    border: 1px solid var(--radius-line);
+    border-radius: 16px;
+    background: var(--radius-card);
+    box-shadow: 0 8px 26px rgba(15, 23, 42, .06);
+}
+
+.radius-controls {
+    padding: 20px;
+}
+
+.radius-control-row,
+.radius-toolbar,
+.radius-status-row,
+.radius-log-panel > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.radius-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.radius-filters a {
+    padding: 8px 12px;
+    border: 1px solid var(--radius-line);
+    border-radius: 9px;
+    color: #475569;
+    background: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    transition: border-color .15s ease, color .15s ease, background .15s ease;
+}
+
+.radius-filters a:hover {
+    border-color: #93c5fd;
+    color: #1d4ed8;
+}
+
+.radius-filters a.active {
+    border-color: #2563eb;
+    color: #fff;
+    background: #2563eb;
+}
+
+.radius-lines-form {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 8px;
+}
+
+.radius-lines-form label {
+    margin: 0;
+    color: var(--radius-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.radius-lines-form select {
+    height: 38px;
+    min-width: 84px;
+    padding: 0 30px 0 10px;
+    border: 1px solid var(--radius-line);
+    border-radius: 9px;
+    color: var(--radius-ink);
+    background: #fff;
+}
+
+.radius-toolbar {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--radius-line);
+}
+
+.radius-search {
+    display: flex;
+    flex: 1 1 400px;
+    align-items: center;
+    min-width: 240px;
+    max-width: 620px;
+    height: 42px;
+    padding: 0 13px;
+    border: 1px solid var(--radius-line);
+    border-radius: 10px;
+    background: #f8fafc;
+}
+
+.radius-search i {
+    margin-right: 10px;
+    color: #64748b;
+}
+
+.radius-search input {
+    width: 100%;
+    height: 38px;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    color: var(--radius-ink);
+    background: transparent;
+    font-size: 13px;
+}
+
+.radius-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.radius-actions form {
+    margin: 0;
+}
+
+.radius-button {
+    min-height: 40px;
+    padding: 9px 13px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.radius-button i {
+    margin-right: 5px;
+}
+
+.radius-button:disabled {
+    opacity: .65;
+    cursor: wait;
+}
+
+.radius-button-run { background: var(--radius-success); }
+.radius-button-stop { background: var(--radius-danger); }
+.radius-button-clean { background: #b45309; }
+
+.radius-button-secondary {
+    border-color: var(--radius-line);
+    color: #334155;
+    background: #fff;
+}
+
+.radius-status-row {
+    margin-top: 14px;
+    color: var(--radius-muted);
+    font-size: 11px;
+}
+
+.radius-status {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 800;
+}
+
+.radius-status-dot {
+    width: 8px;
+    height: 8px;
+    margin-right: 7px;
+    border-radius: 50%;
+    background: #94a3b8;
+}
+
+.radius-status.is-running {
+    color: #047857;
+}
+
+.radius-status.is-running .radius-status-dot {
+    background: #10b981;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, .14);
+}
+
+.radius-log-panel {
+    overflow: hidden;
+}
+
+.radius-log-panel > header {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--radius-line);
+}
+
+.radius-log-panel h2 {
+    margin: 0;
+    color: var(--radius-ink);
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.radius-visible-count {
+    padding: 6px 10px;
+    border-radius: 999px;
+    color: #475569;
+    background: #f1f5f9;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.radius-log-list {
+    max-height: 760px;
+    overflow: auto;
+    padding: 10px;
+    background: #f8fafc;
+}
+
+.radius-log-entry {
+    display: grid;
+    grid-template-columns: minmax(130px, 210px) minmax(0, 1fr);
+    align-items: start;
+    gap: 14px;
+    margin-bottom: 7px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #94a3b8;
+    border-radius: 10px;
+    background: #fff;
+}
+
+.radius-log-entry:last-child {
+    margin-bottom: 0;
+}
+
+.radius-log-entry.type-conectados { border-left-color: var(--radius-success); }
+.radius-log-entry.type-erros { border-left-color: var(--radius-danger); }
+.radius-log-entry.type-multiplos { border-left-color: var(--radius-warning); }
+.radius-log-entry.type-sql { border-left-color: var(--radius-sql); }
+
+.radius-log-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+}
+
+.radius-log-badge {
+    display: inline-flex;
+    padding: 4px 7px;
+    border-radius: 6px;
+    color: #475569;
+    background: #e2e8f0;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+}
+
+.type-conectados .radius-log-badge {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.type-erros .radius-log-badge {
+    color: #b91c1c;
+    background: #fee2e2;
+}
+
+.type-multiplos .radius-log-badge {
+    color: #b45309;
+    background: #fef3c7;
+}
+
+.type-sql .radius-log-badge {
+    color: #6d28d9;
+    background: #ede9fe;
+}
+
+.radius-client-link {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 800;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+}
+
+.radius-client-link:hover {
+    color: #1e40af;
+    text-decoration: underline;
+}
+
+.radius-client-link i {
+    flex: 0 0 auto;
+    margin-right: 5px;
+}
+
+.radius-log-entry code {
+    display: block;
+    padding: 1px 0;
+    color: #334155;
+    background: transparent;
+    font-family: Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 11.5px;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+}
+
+.radius-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 7px;
+    padding: 56px 24px;
+    color: var(--radius-muted);
+    text-align: center;
+}
+
+.radius-empty[hidden] {
+    display: none;
+}
+
+.radius-empty i {
+    color: #94a3b8;
+    font-size: 28px;
+}
+
+.radius-empty strong {
+    color: var(--radius-ink);
+}
+
+.radius-empty-error i,
+.radius-empty-error strong {
+    color: var(--radius-danger);
+}
+
+@media (max-width: 980px) {
+    .radius-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .radius-control-row,
+    .radius-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .radius-search {
+        flex-basis: auto;
+        max-width: none;
+    }
+
+    .radius-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 680px) {
+    .radius-app {
+        width: min(100% - 18px, 1460px);
+        margin-top: 12px;
+    }
+
+    .radius-hero {
+        padding: 24px 20px;
+    }
+
+    .radius-hero p {
+        font-size: 13px;
+    }
+
+    .radius-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .radius-stat {
+        min-height: 82px;
+        padding: 14px;
+    }
+
+    .radius-stat:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .radius-status-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .radius-log-entry {
+        grid-template-columns: 1fr;
+        gap: 9px;
+    }
+
+    .radius-log-meta {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+}

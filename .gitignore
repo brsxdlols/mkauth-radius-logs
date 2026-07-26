@@ -1,0 +1,9 @@
+*.log
+*.tar
+*.tar.gz
+*.zip
+*.bak
+*.backup
+config.php
+radius.txt
+desktop.ini

@@ -1,0 +1,37 @@
+<?php
+include('addons.class.php');
+
+header('Content-Type: text/plain; charset=UTF-8');
+
+if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+    http_response_code(405);
+    header('Allow: POST');
+    echo "Método não permitido.";
+    exit;
+}
+
+$sessionToken = isset($_SESSION['radius_csrf_token']) ? $_SESSION['radius_csrf_token'] : '';
+$requestToken = isset($_POST['csrf_token']) ? (string)$_POST['csrf_token'] : '';
+
+if (!is_string($sessionToken) || $sessionToken === '' || !hash_equals($sessionToken, $requestToken)) {
+    http_response_code(403);
+    echo "Solicitação inválida. Atualize a página e tente novamente.";
+    exit;
+}
+
+require_once('/opt/mk-auth/include/conexao.php');
+
+if (!isset($LOADMYSQL) || !($LOADMYSQL instanceof mysqli)) {
+    http_response_code(500);
+    echo "Não foi possível estabelecer a conexão com o banco de dados.";
+    exit;
+}
+
+if (!$LOADMYSQL->query('DELETE FROM radacct WHERE acctstoptime IS NULL')) {
+    http_response_code(500);
+    echo "Não foi possível limpar as conexões presas.";
+    exit;
+}
+
+$deletedRows = (int)$LOADMYSQL->affected_rows;
+echo "Conexões presas removidas: " . $deletedRows;
