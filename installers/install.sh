@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-VERSION=4.3.0
+VERSION=4.3.1
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 SOURCE_DIR="$ROOT_DIR/addons/radius"
@@ -46,6 +46,22 @@ find_addon_js() {
     return 1
 }
 
+has_radius_shortcut() {
+    awk '
+        {
+            line = tolower($0)
+            trimmed = line
+            sub(/^[[:space:]]+/, "", trimmed)
+
+            if (trimmed !~ /^\/\// && trimmed !~ /^\/\*/ && trimmed !~ /^\*/ && index(line, "addons/radius/") > 0) {
+                found = 1
+                exit
+            }
+        }
+        END { exit(found ? 0 : 1) }
+    ' "$1"
+}
+
 [ "$(id -u)" -eq 0 ] || fail "execute como root"
 [ -d "$ADMIN_DIR" ] || fail "diretorio administrativo do MK-Auth nao encontrado: $ADMIN_DIR"
 [ -f "$CORE_ADDONS_CLASS" ] || fail "integracao de addons do MK-Auth nao encontrada: $CORE_ADDONS_CLASS"
@@ -77,18 +93,16 @@ chown -R root:www-data "$TARGET_DIR" 2>/dev/null || true
 find "$TARGET_DIR" -type d -exec chmod 0755 {} \;
 find "$TARGET_DIR" -type f -exec chmod 0644 {} \;
 
-if [ -n "$ADDON_JS" ]; then
-    menu_tmp=$(mktemp /tmp/mkauth-radius-addon-js.XXXXXX)
-    awk 'tolower($0) !~ /addons\/radius\//' "$ADDON_JS" > "$menu_tmp"
-    cat "$menu_tmp" > "$ADDON_JS"
-    rm -f "$menu_tmp"
-
+if [ -n "$ADDON_JS" ] && has_radius_shortcut "$ADDON_JS"; then
+    echo "Menu: atalho existente mantido; nenhuma duplicacao criada."
+elif [ -n "$ADDON_JS" ]; then
     cat >> "$ADDON_JS" <<'MENU_SNIPPET'
 
 // RADIUS LOGS INICIO
 add_menu.provedor('{"plink": "' + minha_url + 'addons/radius/", "ptext": "<b>Radius Logs</b>"}');
 // RADIUS LOGS FIM
 MENU_SNIPPET
+    echo "Menu: atalho Radius Logs criado."
 else
     warn "addon.js nao encontrado; registre manualmente o atalho para addons/radius/"
 fi

@@ -13,6 +13,7 @@ Addon para acompanhar o log do FreeRADIUS dentro do painel administrativo do MK-
 - saída do log protegida com escape de HTML;
 - limpeza de sessões presas protegida por sessão administrativa, POST e token CSRF;
 - conexão com o banco reutilizada do próprio MK-Auth, sem credenciais no addon;
+- criação automática e idempotente do atalho no `addon.js`;
 - backup automático antes da instalação ou atualização.
 
 ## Compatibilidade
@@ -41,7 +42,7 @@ O addon será instalado em:
 Antes de substituir uma instalação existente, o instalador cria um backup em:
 
 ```text
-/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.0
+/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.1
 ```
 
 ## Instalação pelo GitHub
@@ -57,12 +58,14 @@ curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/i
 Informe o diretório de backup criado pelo instalador:
 
 ```sh
-sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.0
+sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.1
 ```
 
 ## Funcionamento da atualização
 
 O navegador consulta `logs_data.php` a cada 5 segundos e substitui somente os eventos e contadores. A página completa, o menu do MK-Auth e os controles não são recarregados.
+
+Durante a instalação, o script procura o `addon.js` usado pelo MK-Auth. Se já houver um atalho ativo para `addons/radius/`, ele é preservado e nenhum segundo item é criado. Se não houver, o atalho **Radius Logs** é incluído no menu **Provedor**.
 
 Quando a lista está rolada, o JavaScript registra a primeira linha visível e seu deslocamento. Depois de inserir os eventos novos, ele procura a mesma linha e restaura a posição. Se a lista estiver no topo, ela continua acompanhando os eventos mais recentes.
 
