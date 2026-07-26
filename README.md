@@ -14,6 +14,7 @@ Addon para acompanhar o log do FreeRADIUS dentro do painel administrativo do MK-
 - limpeza de sessões presas protegida por sessão administrativa, POST e token CSRF;
 - conexão com o banco reutilizada do próprio MK-Auth, sem credenciais no addon;
 - criação automática e idempotente do atalho no `addon.js`;
+- detecção dos caminhos comuns do log e ajuste automático de leitura para o usuário web;
 - backup automático antes da instalação ou atualização.
 
 ## Compatibilidade
@@ -42,7 +43,7 @@ O addon será instalado em:
 Antes de substituir uma instalação existente, o instalador cria um backup em:
 
 ```text
-/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.1
+/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.2
 ```
 
 ## Instalação pelo GitHub
@@ -58,14 +59,16 @@ curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/i
 Informe o diretório de backup criado pelo instalador:
 
 ```sh
-sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.1
+sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.2
 ```
 
 ## Funcionamento da atualização
 
 O navegador consulta `logs_data.php` a cada 5 segundos e substitui somente os eventos e contadores. A página completa, o menu do MK-Auth e os controles não são recarregados.
 
-Durante a instalação, o script procura o `addon.js` usado pelo MK-Auth. Se já houver um atalho ativo para `addons/radius/`, ele é preservado e nenhum segundo item é criado. Se não houver, o atalho **Radius Logs** é incluído no menu **Provedor**.
+Durante a instalação, o script procura o `addon.js` usado pelo MK-Auth, remove somente registros `add_menu` equivalentes do Radius e grava um único atalho **Radius Logs** no menu **Provedor**. O arquivo original é incluído no backup antes da consolidação.
+
+O instalador também procura os caminhos mais comuns do log do FreeRADIUS e testa a leitura como `www-data`. Quando necessário, concede acesso por ACL; em sistemas sem ACL, reutiliza de forma conservadora o grupo já associado ao arquivo. O addon escolhe automaticamente o primeiro arquivo de log acessível.
 
 Quando a lista está rolada, o JavaScript registra a primeira linha visível e seu deslocamento. Depois de inserir os eventos novos, ele procura a mesma linha e restaura a posição. Se a lista estiver no topo, ela continua acompanhando os eventos mais recentes.
 

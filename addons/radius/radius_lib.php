@@ -84,9 +84,46 @@ function radius_client_url($login)
     ));
 }
 
+function radius_log_candidates()
+{
+    $candidates = array();
+    $configuredPath = getenv('RADIUS_LOG_FILE');
+
+    if (is_string($configuredPath) && $configuredPath !== '') {
+        $candidates[] = $configuredPath;
+    }
+
+    $candidates[] = '/var/log/freeradius/radius.log';
+    $candidates[] = '/var/log/freeradius/freeradius.log';
+    $candidates[] = '/var/log/freeradius/radiusd.log';
+    $candidates[] = '/var/log/radius/radius.log';
+    $candidates[] = '/var/log/radius/radiusd.log';
+
+    return array_values(array_unique($candidates));
+}
+
+function radius_log_path()
+{
+    $candidates = radius_log_candidates();
+
+    foreach ($candidates as $candidate) {
+        if (is_readable($candidate)) {
+            return $candidate;
+        }
+    }
+
+    foreach ($candidates as $candidate) {
+        if (is_file($candidate)) {
+            return $candidate;
+        }
+    }
+
+    return $candidates[0];
+}
+
 function radius_read_logs($filter, $linesLimit)
 {
-    $logPath = '/var/log/freeradius/radius.log';
+    $logPath = radius_log_path();
     $logLines = array();
     $logError = '';
 
@@ -99,7 +136,7 @@ function radius_read_logs($filter, $linesLimit)
             $logLines = preg_split('/\r\n|\r|\n/', rtrim($result));
         }
     } else {
-        $logError = 'O arquivo de log do FreeRADIUS não está acessível para leitura.';
+        $logError = 'O arquivo de log do FreeRADIUS não está acessível para leitura: ' . $logPath;
     }
 
     $counts = array(
