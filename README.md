@@ -43,7 +43,7 @@ O addon será instalado em:
 Antes de substituir uma instalação existente, o instalador cria um backup em:
 
 ```text
-/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.2
+/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.3
 ```
 
 ## Instalação pelo GitHub
@@ -59,7 +59,7 @@ curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/i
 Informe o diretório de backup criado pelo instalador:
 
 ```sh
-sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.2
+sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.3
 ```
 
 ## Funcionamento da atualização
@@ -72,6 +72,16 @@ O instalador também procura os caminhos mais comuns do log do FreeRADIUS e test
 
 Quando a lista está rolada, o JavaScript registra a primeira linha visível e seu deslocamento. Depois de inserir os eventos novos, ele procura a mesma linha e restaura a posição. Se a lista estiver no topo, ela continua acompanhando os eventos mais recentes.
 
+## Configuração Huawei BNG/NE8K
+
+O instalador exibe ao final um exemplo completo de `radius-server`, o cadastro correto do ramal/NAS no MK-Auth e o teste:
+
+```text
+test-aaa ne8k 1 radius-group radius-server-pppoe chap
+```
+
+Consulte ou baixe o guia: [Configurar Huawei BNG/NE8K com o RADIUS do MK-Auth](docs/configurar-radius-server-huawei.md).
+
 ## Segurança
 
 - `index.php`, `logs_data.php` e `run_script.hhvm` carregam a autenticação nativa do MK-Auth.
@@ -83,6 +93,7 @@ Quando a lista está rolada, o JavaScript registra a primeira linha visível e s
 
 ```text
 addons/radius/       Arquivos instalados no MK-Auth
+docs/                Guias de configuração e testes
 installers/          Instalação, instalação remota e rollback
 VERSION              Versão do pacote
 ```
