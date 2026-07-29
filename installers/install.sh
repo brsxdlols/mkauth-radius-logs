@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-VERSION=4.3.2
+VERSION=4.3.3
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 SOURCE_DIR="$ROOT_DIR/addons/radius"
@@ -23,6 +23,48 @@ fail() {
 
 warn() {
     echo "AVISO: $*" >&2
+}
+
+print_huawei_radius_guide() {
+    cat <<'HUAWEI_GUIDE'
+
+=== PROXIMO PASSO: CONFIGURAR HUAWEI BNG/NE8K ===
+
+Exemplo (altere IPs, LoopBack e chave conforme o ambiente):
+
+radius-server group radius-server-pppoe
+ radius-server shared-key-cipher radius@bng
+ radius-server authentication 172.16.88.2 source ip-address 45.170.122.1 1812 weight 0
+ radius-server accounting 172.16.88.2 source ip-address 45.170.122.1 1813 weight 0
+ radius-server retransmit 5 timeout 20
+ radius-server source interface LoopBack1
+ radius-server nas-ip-address 45.170.122.1
+ radius-server user-name original
+ radius-server user-name trust-server-request
+ radius-server nas-port-id include interface-description delimiter - pe-vlan
+#
+radius local-ip 45.170.122.1
+undo radius local-ip all
+radius-server authorization 172.16.88.2 destination-port 3799 shared-key-cipher radius@bng server-group radius-server-pppoe
+#
+
+No MK-Auth, abra /admin/ramais.hhvm e cadastre o ramal/NAS:
+  IP do ramal: 45.170.122.1 (IP de origem/NAS do Huawei)
+  Segredo:      radius@bng (a mesma chave do Huawei)
+  Nome curto:   NE8K
+  Tipo:         other, se nao houver opcao especifica para Huawei
+
+ATENCAO: 172.16.88.2 e o servidor RADIUS; nao use esse IP como ramal.
+Crie/ative o cliente de teste ne8k com senha 1 e execute no Huawei:
+
+test-aaa ne8k 1 radius-group radius-server-pppoe chap
+
+Depois, confirme o resultado no addon Radius Logs.
+Use uma chave e uma senha fortes em producao; os valores acima sao exemplos.
+
+Guia completo para baixar:
+https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/docs/configurar-radius-server-huawei.md
+HUAWEI_GUIDE
 }
 
 find_addon_js() {
@@ -225,3 +267,4 @@ echo "Backup: $BACKUP_DIR"
 if [ -n "$ADDON_JS" ]; then
     echo "Menu: $ADDON_JS"
 fi
+print_huawei_radius_guide
