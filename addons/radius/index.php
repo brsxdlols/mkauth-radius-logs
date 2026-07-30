@@ -178,7 +178,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         <div class="radius-status-row">
             <span class="radius-status <?php echo $autoRefreshRunning ? 'is-running' : 'is-paused'; ?>">
                 <span class="radius-status-dot"></span>
-                <?php echo $autoRefreshRunning ? 'Atualização automática a cada 5 segundos' : 'Atualização automática pausada'; ?>
+                <?php echo $autoRefreshRunning ? 'Atualização automática a cada 2 segundos' : 'Atualização automática pausada'; ?>
             </span>
             <span id="updatedAt">Atualizado em <?php echo radius_escape($logData['updated_at']); ?></span>
         </div>
@@ -248,7 +248,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     var scrollToLogsOnLoad = <?php echo $scrollToLogsOnLoad ? 'true' : 'false'; ?>;
     var refreshTimer = null;
     var refreshInFlight = false;
-    var refreshInterval = 5000;
+    var refreshInterval = 2000;
     var currentFilter = <?php echo json_encode($filter); ?>;
     var currentLines = <?php echo (int)$linesLimit; ?>;
 
