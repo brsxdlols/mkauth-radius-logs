@@ -24,6 +24,8 @@ $requestMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] 
 $directAddonOpen = $requestMethod === 'GET'
     && !isset($_GET['filtro'])
     && !isset($_GET['linhas']);
+$scrollToLogsOnLoad = $directAddonOpen
+    || (isset($_POST['action']) && $_POST['action'] === 'start');
 if ($directAddonOpen) {
     $_SESSION['radius_auto_refresh'] = true;
 }
@@ -243,7 +245,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     var cleanButton = document.getElementById('cleanSessionsButton');
     var refreshNowButton = document.getElementById('refreshNowButton');
     var autoRefreshRunning = <?php echo $autoRefreshRunning ? 'true' : 'false'; ?>;
-    var scrollToLogsOnLoad = <?php echo $directAddonOpen ? 'true' : 'false'; ?>;
+    var scrollToLogsOnLoad = <?php echo $scrollToLogsOnLoad ? 'true' : 'false'; ?>;
     var refreshTimer = null;
     var refreshInFlight = false;
     var refreshInterval = 5000;

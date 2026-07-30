@@ -9,7 +9,7 @@ Addon para acompanhar o log do FreeRADIUS dentro do painel administrativo do MK-
 - pesquisa instantânea por login, NAS, MAC ou mensagem;
 - seleção de NAS combinada com a pesquisa e preservada nas atualizações AJAX;
 - painel de eventos em estilo terminal, com fundo preto e cores por tipo de log;
-- início automático ao abrir o addon e rolagem direta até o painel de eventos;
+- início automático e rolagem até os eventos ao abrir o addon ou clicar em **Atualizar auto**;
 - atualização AJAX a cada 5 segundos, sem recarregar a página;
 - preservação da linha e da posição de rolagem durante a atualização;
 - login clicável para a busca nativa de clientes do MK-Auth;
@@ -46,7 +46,7 @@ O addon será instalado em:
 Antes de substituir uma instalação existente, o instalador cria um backup em:
 
 ```text
-/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.5
+/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.6
 ```
 
 ## Instalação pelo GitHub
@@ -62,7 +62,7 @@ curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/i
 Informe o diretório de backup criado pelo instalador:
 
 ```sh
-sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.5
+sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.6
 ```
 
 ## Funcionamento da atualização
@@ -75,7 +75,7 @@ O instalador também procura os caminhos mais comuns do log do FreeRADIUS e test
 
 Quando a lista está rolada, o JavaScript registra a primeira linha visível e seu deslocamento. Depois de inserir os eventos novos, ele procura a mesma linha e restaura a posição. Se a lista estiver no topo, ela continua acompanhando os eventos mais recentes.
 
-Ao abrir o addon diretamente pelo menu, a atualização automática começa e a página rola até o painel de eventos. O botão **Pausar** interrompe as consultas na tela atual.
+Ao abrir o addon diretamente pelo menu, a atualização automática começa e a página rola até o painel de eventos. Quando o operador clica em **Atualizar auto** depois de uma pausa, o POST inicia as consultas e rola novamente até os eventos. O botão **Pausar** interrompe as consultas sem forçar a rolagem.
 
 O botão **Limpar sessões presas** exclui do `radacct` apenas registros sem `acctstoptime`. Ele corrige sessões que permaneceram abertas no banco, mas não envia comando de desconexão ao NAS.
 
