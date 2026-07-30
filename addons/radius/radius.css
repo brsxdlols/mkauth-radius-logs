@@ -235,6 +235,40 @@
     font-size: 13px;
 }
 
+.radius-nas-filter {
+    display: flex;
+    flex: 0 1 280px;
+    align-items: center;
+    min-width: 190px;
+    height: 42px;
+    padding: 0 10px 0 13px;
+    border: 1px solid var(--radius-line);
+    border-radius: 10px;
+    background: #fff;
+}
+
+.radius-nas-filter label {
+    flex: 0 0 auto;
+    margin: 0 9px 0 0;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.radius-nas-filter select {
+    min-width: 0;
+    width: 100%;
+    height: 38px;
+    padding: 0 26px 0 0;
+    border: 0;
+    outline: 0;
+    color: var(--radius-ink);
+    background: #fff;
+    font-size: 12px;
+}
+
 .radius-actions {
     display: flex;
     flex-wrap: wrap;
@@ -334,7 +368,24 @@
     max-height: 760px;
     overflow: auto;
     padding: 10px;
-    background: #f8fafc;
+    color-scheme: dark;
+    scrollbar-color: #334155 #05070a;
+    background: #05070a;
+}
+
+.radius-log-list::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+}
+
+.radius-log-list::-webkit-scrollbar-track {
+    background: #05070a;
+}
+
+.radius-log-list::-webkit-scrollbar-thumb {
+    border: 3px solid #05070a;
+    border-radius: 999px;
+    background: #334155;
 }
 
 .radius-log-entry {
@@ -344,10 +395,10 @@
     gap: 14px;
     margin-bottom: 7px;
     padding: 12px 14px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #1e293b;
     border-left: 4px solid #94a3b8;
     border-radius: 10px;
-    background: #fff;
+    background: #0a0f16;
 }
 
 .radius-log-entry:last-child {
@@ -370,8 +421,8 @@
     display: inline-flex;
     padding: 4px 7px;
     border-radius: 6px;
-    color: #475569;
-    background: #e2e8f0;
+    color: #cbd5e1;
+    background: #1e293b;
     font-size: 10px;
     font-weight: 900;
     letter-spacing: .03em;
@@ -379,30 +430,30 @@
 }
 
 .type-conectados .radius-log-badge {
-    color: #047857;
-    background: #d1fae5;
+    color: #6ee7b7;
+    background: rgba(16, 185, 129, .18);
 }
 
 .type-erros .radius-log-badge {
-    color: #b91c1c;
-    background: #fee2e2;
+    color: #fda4af;
+    background: rgba(244, 63, 94, .18);
 }
 
 .type-multiplos .radius-log-badge {
-    color: #b45309;
-    background: #fef3c7;
+    color: #fcd34d;
+    background: rgba(245, 158, 11, .18);
 }
 
 .type-sql .radius-log-badge {
-    color: #6d28d9;
-    background: #ede9fe;
+    color: #c4b5fd;
+    background: rgba(139, 92, 246, .20);
 }
 
 .radius-client-link {
     display: inline-flex;
     align-items: center;
     max-width: 100%;
-    color: #1d4ed8;
+    color: #93c5fd;
     font-size: 12px;
     font-weight: 800;
     overflow-wrap: anywhere;
@@ -410,7 +461,7 @@
 }
 
 .radius-client-link:hover {
-    color: #1e40af;
+    color: #dbeafe;
     text-decoration: underline;
 }
 
@@ -422,13 +473,37 @@
 .radius-log-entry code {
     display: block;
     padding: 1px 0;
-    color: #334155;
+    color: #d8e2ef;
     background: transparent;
     font-family: Consolas, "Liberation Mono", Menlo, monospace;
     font-size: 11.5px;
     line-height: 1.55;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
+}
+
+.radius-log-entry.type-conectados code { color: #62f59a; }
+.radius-log-entry.type-erros code { color: #ff6675; }
+.radius-log-entry.type-multiplos code { color: #fbcf5b; }
+.radius-log-entry.type-sql code { color: #c4b5fd; }
+
+.radius-log-panel > .radius-empty {
+    min-height: 220px;
+    color: #94a3b8;
+    background: #05070a;
+}
+
+.radius-log-panel > .radius-empty i {
+    color: #64748b;
+}
+
+.radius-log-panel > .radius-empty strong {
+    color: #e2e8f0;
+}
+
+.radius-log-panel > .radius-empty-error i,
+.radius-log-panel > .radius-empty-error strong {
+    color: #fb7185;
 }
 
 .radius-empty {
@@ -473,6 +548,11 @@
     .radius-search {
         flex-basis: auto;
         max-width: none;
+    }
+
+    .radius-nas-filter {
+        flex-basis: auto;
+        width: 100%;
     }
 
     .radius-actions {

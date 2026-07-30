@@ -57,6 +57,19 @@ function radius_extract_login($line)
     return '';
 }
 
+function radius_extract_nas($line)
+{
+    if (preg_match('/\bfrom client\s+(.+?)\s+port\b/i', $line, $matches)) {
+        return trim($matches[1]);
+    }
+
+    if (preg_match('/\bfrom client\s+([^\)\]]+)/i', $line, $matches)) {
+        return trim($matches[1]);
+    }
+
+    return '';
+}
+
 function radius_type_labels()
 {
     return array(
@@ -157,6 +170,7 @@ function radius_read_logs($filter, $linesLimit)
 
         $type = radius_log_type($line);
         $login = radius_extract_login($line);
+        $nas = radius_extract_nas($line);
         $counts['todos']++;
         $counts[$type]++;
 
@@ -170,8 +184,9 @@ function radius_read_logs($filter, $linesLimit)
             'label' => $labels[$type],
             'line' => $line,
             'login' => $login,
+            'nas' => $nas,
             'client_url' => $login === '' ? '' : radius_client_url($login),
-            'search' => strtolower($line . ' ' . $login),
+            'search' => strtolower($line . ' ' . $login . ' ' . $nas),
         );
     }
 

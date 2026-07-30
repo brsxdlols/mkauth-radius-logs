@@ -7,6 +7,8 @@ Addon para acompanhar o log do FreeRADIUS dentro do painel administrativo do MK-
 - painel responsivo com contadores de conexões, erros, duplicidades e alertas SQL;
 - filtros por tipo de evento e seleção de 50 a 2.000 linhas;
 - pesquisa instantânea por login, NAS, MAC ou mensagem;
+- seleção de NAS combinada com a pesquisa e preservada nas atualizações AJAX;
+- painel de eventos em estilo terminal, com fundo preto e cores por tipo de log;
 - atualização AJAX a cada 5 segundos, sem recarregar a página;
 - preservação da linha e da posição de rolagem durante a atualização;
 - login clicável para a busca nativa de clientes do MK-Auth;
@@ -43,7 +45,7 @@ O addon será instalado em:
 Antes de substituir uma instalação existente, o instalador cria um backup em:
 
 ```text
-/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.2
+/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.4
 ```
 
 ## Instalação pelo GitHub
@@ -59,7 +61,7 @@ curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/i
 Informe o diretório de backup criado pelo instalador:
 
 ```sh
-sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.2
+sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.4
 ```
 
 ## Funcionamento da atualização
