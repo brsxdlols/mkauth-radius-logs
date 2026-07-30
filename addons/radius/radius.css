@@ -341,6 +341,7 @@
 
 .radius-log-panel {
     overflow: hidden;
+    scroll-margin-top: 72px;
 }
 
 .radius-log-panel > header {

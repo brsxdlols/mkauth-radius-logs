@@ -20,6 +20,14 @@ $linesLimit = radius_normalize_lines(
     100
 );
 
+$requestMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+$directAddonOpen = $requestMethod === 'GET'
+    && !isset($_GET['filtro'])
+    && !isset($_GET['linhas']);
+if ($directAddonOpen) {
+    $_SESSION['radius_auto_refresh'] = true;
+}
+
 if (isset($_POST['action'])) {
     if ($_POST['action'] === 'start') {
         $_SESSION['radius_auto_refresh'] = true;
@@ -62,7 +70,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css">
     <link href="../../estilos/bi-icons.css" rel="stylesheet" type="text/css">
     <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
-    <link href="radius.css?v=434" rel="stylesheet" type="text/css">
+    <link href="radius.css?v=435" rel="stylesheet" type="text/css">
     <script src="../../scripts/jquery.js"></script>
     <script src="../../scripts/mk-auth.js"></script>
 </head>
@@ -159,8 +167,8 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                 <button id="refreshNowButton" class="radius-button radius-button-secondary" type="button">
                     <i class="bi bi-arrow-clockwise"></i> Atualizar agora
                 </button>
-                <button id="cleanSessionsButton" class="radius-button radius-button-clean" type="button">
-                    <i class="bi bi-trash"></i> Limpar conexões presas
+                <button id="cleanSessionsButton" class="radius-button radius-button-clean" type="button" title="Remove do radacct os registros sem horário de encerramento. Não desconecta clientes no NAS.">
+                    <i class="bi bi-trash"></i> Limpar sessões presas
                 </button>
             </div>
         </div>
@@ -235,6 +243,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     var cleanButton = document.getElementById('cleanSessionsButton');
     var refreshNowButton = document.getElementById('refreshNowButton');
     var autoRefreshRunning = <?php echo $autoRefreshRunning ? 'true' : 'false'; ?>;
+    var scrollToLogsOnLoad = <?php echo $directAddonOpen ? 'true' : 'false'; ?>;
     var refreshTimer = null;
     var refreshInFlight = false;
     var refreshInterval = 5000;
@@ -504,7 +513,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     if (cleanButton) {
         cleanButton.addEventListener('click', function () {
             var confirmed = window.confirm(
-                'Esta ação exclui do radacct todas as sessões sem horário de encerramento (acctstoptime = NULL). Deseja continuar?'
+                'Esta ação exclui do radacct os registros sem horário de encerramento (acctstoptime = NULL). Ela não desconecta o cliente no NAS. Deseja continuar?'
             );
             if (!confirmed) {
                 return;
@@ -522,13 +531,13 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                 success: function (response) {
                     window.alert(response);
                     cleanButton.disabled = false;
-                    cleanButton.innerHTML = '<i class="bi bi-trash"></i> Limpar conexões presas';
+                    cleanButton.innerHTML = '<i class="bi bi-trash"></i> Limpar sessões presas';
                     requestLogs();
                 },
                 error: function () {
                     window.alert('Não foi possível executar a limpeza.');
                     cleanButton.disabled = false;
-                    cleanButton.innerHTML = '<i class="bi bi-trash"></i> Limpar conexões presas';
+                    cleanButton.innerHTML = '<i class="bi bi-trash"></i> Limpar sessões presas';
                 }
             });
         });
@@ -537,6 +546,14 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     refreshNasOptions();
     applySearchFilter();
     scheduleRefresh();
+    if (scrollToLogsOnLoad) {
+        window.setTimeout(function () {
+            var logPanel = document.querySelector('.radius-log-panel');
+            if (logPanel) {
+                logPanel.scrollIntoView({ block: 'start' });
+            }
+        }, 180);
+    }
 }());
 </script>
 </body>

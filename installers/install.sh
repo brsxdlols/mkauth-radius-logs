@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-VERSION=4.3.4
+VERSION=4.3.5
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 SOURCE_DIR="$ROOT_DIR/addons/radius"

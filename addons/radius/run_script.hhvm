@@ -29,9 +29,9 @@ if (!isset($LOADMYSQL) || !($LOADMYSQL instanceof mysqli)) {
 
 if (!$LOADMYSQL->query('DELETE FROM radacct WHERE acctstoptime IS NULL')) {
     http_response_code(500);
-    echo "Não foi possível limpar as conexões presas.";
+    echo "Não foi possível limpar as sessões presas.";
     exit;
 }
 
 $deletedRows = (int)$LOADMYSQL->affected_rows;
-echo "Conexões presas removidas: " . $deletedRows;
+echo "Sessões presas removidas do radacct: " . $deletedRows . ". Isso não desconecta clientes no NAS.";
