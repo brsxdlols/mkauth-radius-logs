@@ -20,6 +20,14 @@ $linesLimit = radius_normalize_lines(
     100
 );
 
+$requestMethod = isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET';
+$directAddonOpen = $requestMethod === 'GET'
+    && !isset($_GET['filtro'])
+    && !isset($_GET['linhas']);
+if ($directAddonOpen) {
+    $_SESSION['radius_auto_refresh'] = true;
+}
+
 if (isset($_POST['action'])) {
     if ($_POST['action'] === 'start') {
         $_SESSION['radius_auto_refresh'] = true;
@@ -39,6 +47,14 @@ $logData = radius_read_logs($filter, $linesLimit);
 $counts = $logData['counts'];
 $entries = $logData['entries'];
 $logError = $logData['error'];
+$nasOptions = array();
+foreach ($entries as $entry) {
+    if ($entry['nas'] !== '' && !in_array($entry['nas'], $nasOptions, true)) {
+        $nasOptions[] = $entry['nas'];
+    }
+}
+natcasesort($nasOptions);
+$nasOptions = array_values($nasOptions);
 $typeLabels = radius_type_labels();
 $manifestName = isset($Manifest->name) ? $Manifest->name : 'Radius Logs';
 $manifestVersion = isset($Manifest->version) ? $Manifest->version : '';
@@ -54,7 +70,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css">
     <link href="../../estilos/bi-icons.css" rel="stylesheet" type="text/css">
     <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
-    <link href="radius.css?v=430" rel="stylesheet" type="text/css">
+    <link href="radius.css?v=435" rel="stylesheet" type="text/css">
     <script src="../../scripts/jquery.js"></script>
     <script src="../../scripts/mk-auth.js"></script>
 </head>
@@ -124,6 +140,16 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                 <input id="radiusSearch" type="search" placeholder="Filtrar nesta tela por login, NAS, MAC ou mensagem" autocomplete="off">
             </div>
 
+            <div class="radius-nas-filter">
+                <label for="radiusNasFilter">NAS</label>
+                <select id="radiusNasFilter" aria-label="Filtrar eventos por NAS">
+                    <option value="">Todos os NAS</option>
+                    <?php foreach ($nasOptions as $nasOption) { ?>
+                        <option value="<?php echo radius_escape($nasOption); ?>"><?php echo radius_escape($nasOption); ?></option>
+                    <?php } ?>
+                </select>
+            </div>
+
             <div class="radius-actions">
                 <form method="post" action="index.php">
                     <input type="hidden" name="filtro" value="<?php echo radius_escape($filter); ?>">
@@ -141,8 +167,8 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                 <button id="refreshNowButton" class="radius-button radius-button-secondary" type="button">
                     <i class="bi bi-arrow-clockwise"></i> Atualizar agora
                 </button>
-                <button id="cleanSessionsButton" class="radius-button radius-button-clean" type="button">
-                    <i class="bi bi-trash"></i> Limpar conexões presas
+                <button id="cleanSessionsButton" class="radius-button radius-button-clean" type="button" title="Remove do radacct os registros sem horário de encerramento. Não desconecta clientes no NAS.">
+                    <i class="bi bi-trash"></i> Limpar sessões presas
                 </button>
             </div>
         </div>
@@ -180,7 +206,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                     $type = $entry['type'];
                     $login = $entry['login'];
                     ?>
-                    <article class="radius-log-entry type-<?php echo radius_escape($type); ?>" data-key="<?php echo radius_escape($entry['key']); ?>" data-search="<?php echo radius_escape($entry['search']); ?>">
+                    <article class="radius-log-entry type-<?php echo radius_escape($type); ?>" data-key="<?php echo radius_escape($entry['key']); ?>" data-search="<?php echo radius_escape($entry['search']); ?>" data-nas="<?php echo radius_escape($entry['nas']); ?>">
                         <div class="radius-log-meta">
                             <span class="radius-log-badge"><?php echo radius_escape($typeLabels[$type]); ?></span>
                             <?php if ($login !== '') { ?>
@@ -197,7 +223,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         <div id="radiusNoSearchResults" class="radius-empty" hidden>
             <i class="bi bi-search"></i>
             <strong>Nenhuma linha corresponde à busca</strong>
-            <span>Limpe o campo de pesquisa para mostrar os eventos novamente.</span>
+            <span>Ajuste a pesquisa ou selecione outro NAS para mostrar os eventos.</span>
         </div>
     </section>
 </main>
@@ -207,6 +233,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
 <script>
 (function () {
     var searchInput = document.getElementById('radiusSearch');
+    var nasFilter = document.getElementById('radiusNasFilter');
     var list = document.getElementById('radiusLogList');
     var visibleCount = document.getElementById('visibleCount');
     var noResults = document.getElementById('radiusNoSearchResults');
@@ -216,6 +243,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     var cleanButton = document.getElementById('cleanSessionsButton');
     var refreshNowButton = document.getElementById('refreshNowButton');
     var autoRefreshRunning = <?php echo $autoRefreshRunning ? 'true' : 'false'; ?>;
+    var scrollToLogsOnLoad = <?php echo $directAddonOpen ? 'true' : 'false'; ?>;
     var refreshTimer = null;
     var refreshInFlight = false;
     var refreshInterval = 5000;
@@ -289,6 +317,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         article.className = 'radius-log-entry type-' + entry.type;
         article.setAttribute('data-key', entry.key);
         article.setAttribute('data-search', entry.search);
+        article.setAttribute('data-nas', entry.nas || '');
 
         meta.className = 'radius-log-meta';
         badge.className = 'radius-log-badge';
@@ -317,15 +346,67 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         return article;
     }
 
+    function refreshNasOptions() {
+        var selectedNas = nasFilter ? nasFilter.value : '';
+        var entries = list ? list.getElementsByClassName('radius-log-entry') : [];
+        var nasNames = [];
+        var knownNas = {};
+        var index;
+        var nasName;
+        var option;
+
+        if (!nasFilter) {
+            return;
+        }
+
+        for (index = 0; index < entries.length; index++) {
+            nasName = entries[index].getAttribute('data-nas') || '';
+            if (nasName !== '' && !Object.prototype.hasOwnProperty.call(knownNas, nasName)) {
+                knownNas[nasName] = true;
+                nasNames.push(nasName);
+            }
+        }
+
+        nasNames.sort(function (first, second) {
+            return first.toLowerCase().localeCompare(second.toLowerCase());
+        });
+
+        while (nasFilter.options.length > 0) {
+            nasFilter.remove(0);
+        }
+
+        option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'Todos os NAS';
+        nasFilter.appendChild(option);
+
+        if (selectedNas !== '' && !Object.prototype.hasOwnProperty.call(knownNas, selectedNas)) {
+            nasNames.push(selectedNas);
+        }
+
+        for (index = 0; index < nasNames.length; index++) {
+            option = document.createElement('option');
+            option.value = nasNames[index];
+            option.textContent = nasNames[index];
+            nasFilter.appendChild(option);
+        }
+
+        nasFilter.value = selectedNas;
+    }
+
     function applySearchFilter() {
         var term = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        var selectedNas = nasFilter ? nasFilter.value : '';
         var entries = list ? list.getElementsByClassName('radius-log-entry') : [];
         var visible = 0;
         var index;
         var matches;
+        var entryNas;
 
         for (index = 0; index < entries.length; index++) {
-            matches = term === '' || entries[index].getAttribute('data-search').indexOf(term) !== -1;
+            entryNas = entries[index].getAttribute('data-nas') || '';
+            matches = (term === '' || entries[index].getAttribute('data-search').indexOf(term) !== -1)
+                && (selectedNas === '' || entryNas === selectedNas);
             entries[index].style.display = matches ? '' : 'none';
             if (matches) {
                 visible++;
@@ -371,6 +452,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         }
 
         restoreScrollAnchor(anchor);
+        refreshNasOptions();
         applySearchFilter();
     }
 
@@ -420,6 +502,10 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         searchInput.addEventListener('input', applySearchFilter);
     }
 
+    if (nasFilter) {
+        nasFilter.addEventListener('change', applySearchFilter);
+    }
+
     if (refreshNowButton) {
         refreshNowButton.addEventListener('click', requestLogs);
     }
@@ -427,7 +513,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     if (cleanButton) {
         cleanButton.addEventListener('click', function () {
             var confirmed = window.confirm(
-                'Esta ação exclui do radacct todas as sessões sem horário de encerramento (acctstoptime = NULL). Deseja continuar?'
+                'Esta ação exclui do radacct os registros sem horário de encerramento (acctstoptime = NULL). Ela não desconecta o cliente no NAS. Deseja continuar?'
             );
             if (!confirmed) {
                 return;
@@ -445,19 +531,29 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                 success: function (response) {
                     window.alert(response);
                     cleanButton.disabled = false;
-                    cleanButton.innerHTML = '<i class="bi bi-trash"></i> Limpar conexões presas';
+                    cleanButton.innerHTML = '<i class="bi bi-trash"></i> Limpar sessões presas';
                     requestLogs();
                 },
                 error: function () {
                     window.alert('Não foi possível executar a limpeza.');
                     cleanButton.disabled = false;
-                    cleanButton.innerHTML = '<i class="bi bi-trash"></i> Limpar conexões presas';
+                    cleanButton.innerHTML = '<i class="bi bi-trash"></i> Limpar sessões presas';
                 }
             });
         });
     }
 
+    refreshNasOptions();
+    applySearchFilter();
     scheduleRefresh();
+    if (scrollToLogsOnLoad) {
+        window.setTimeout(function () {
+            var logPanel = document.querySelector('.radius-log-panel');
+            if (logPanel) {
+                logPanel.scrollIntoView({ block: 'start' });
+            }
+        }, 180);
+    }
 }());
 </script>
 </body>
