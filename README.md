@@ -5,7 +5,7 @@ Addon para acompanhar o log do FreeRADIUS dentro do painel administrativo do MK-
 ## Recursos
 
 - painel responsivo com contadores de conexões, erros, duplicidades e alertas SQL;
-- filtros por tipo de evento e seleção de 50 a 2.000 linhas;
+- filtros combináveis por tipo de evento e seleção de 50 a 2.000 linhas;
 - pesquisa instantânea por login, NAS, MAC ou mensagem;
 - seleção de NAS combinada com a pesquisa e preservada nas atualizações AJAX;
 - painel de eventos em estilo terminal, com fundo preto e cores por tipo de log;
@@ -46,7 +46,7 @@ O addon será instalado em:
 Antes de substituir uma instalação existente, o instalador cria um backup em:
 
 ```text
-/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.7
+/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.8
 ```
 
 ## Instalação pelo GitHub
@@ -62,12 +62,14 @@ curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/i
 Informe o diretório de backup criado pelo instalador:
 
 ```sh
-sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.7
+sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.8
 ```
 
 ## Funcionamento da atualização
 
 O navegador consulta `logs_data.php` a cada 2 segundos e substitui somente os eventos e contadores. A página completa, o menu do MK-Auth e os controles não são recarregados. Uma nova consulta só é iniciada depois que a anterior termina.
+
+Os botões **Conectados**, **Incorretos**, **Duplicados** e **SQL** podem ser combinados livremente. O botão **Todos** restaura a exibição completa, incluindo eventos informativos. A escolha fica preservada na aba durante as atualizações AJAX e recarregamentos.
 
 Durante a instalação, o script procura o `addon.js` usado pelo MK-Auth, remove somente registros `add_menu` equivalentes do Radius e grava um único atalho **Radius Logs** no menu **Provedor**. O arquivo original é incluído no backup antes da consolidação.
 

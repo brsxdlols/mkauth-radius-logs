@@ -2,14 +2,7 @@
 include('addons.class.php');
 require_once('radius_lib.php');
 
-$requestedFilter = isset($_REQUEST['filtro']) ? (string)$_REQUEST['filtro'] : '';
-if (in_array($requestedFilter, radius_allowed_filters(), true)) {
-    $_SESSION['radius_filtro'] = $requestedFilter;
-}
-$filter = radius_normalize_filter(
-    isset($_SESSION['radius_filtro']) ? $_SESSION['radius_filtro'] : 'todos',
-    'todos'
-);
+$filter = 'todos';
 
 $requestedLines = isset($_REQUEST['linhas']) ? (int)$_REQUEST['linhas'] : 0;
 if ($requestedLines > 0) {
@@ -72,7 +65,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css">
     <link href="../../estilos/bi-icons.css" rel="stylesheet" type="text/css">
     <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
-    <link href="radius.css?v=435" rel="stylesheet" type="text/css">
+    <link href="radius.css?v=438" rel="stylesheet" type="text/css">
     <script src="../../scripts/jquery.js"></script>
     <script src="../../scripts/mk-auth.js"></script>
 </head>
@@ -117,11 +110,11 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
             <div>
                 <span class="radius-label">Exibindo</span>
                 <nav class="radius-filters" aria-label="Filtros dos logs">
-                    <a class="<?php echo $filter === 'todos' ? 'active' : ''; ?>" href="<?php echo radius_escape(radius_filter_url('todos', $linesLimit)); ?>">Todos</a>
-                    <a class="<?php echo $filter === 'conectados' ? 'active' : ''; ?>" href="<?php echo radius_escape(radius_filter_url('conectados', $linesLimit)); ?>">Conectados</a>
-                    <a class="<?php echo $filter === 'erros' ? 'active' : ''; ?>" href="<?php echo radius_escape(radius_filter_url('erros', $linesLimit)); ?>">Incorretos</a>
-                    <a class="<?php echo $filter === 'multiplos' ? 'active' : ''; ?>" href="<?php echo radius_escape(radius_filter_url('multiplos', $linesLimit)); ?>">Duplicados</a>
-                    <a class="<?php echo $filter === 'sql' ? 'active' : ''; ?>" href="<?php echo radius_escape(radius_filter_url('sql', $linesLimit)); ?>">SQL</a>
+                    <button class="radius-filter-button active" type="button" data-log-type="todos" aria-pressed="true">Todos</button>
+                    <button class="radius-filter-button" type="button" data-log-type="conectados" aria-pressed="false">Conectados</button>
+                    <button class="radius-filter-button" type="button" data-log-type="erros" aria-pressed="false">Incorretos</button>
+                    <button class="radius-filter-button" type="button" data-log-type="multiplos" aria-pressed="false">Duplicados</button>
+                    <button class="radius-filter-button" type="button" data-log-type="sql" aria-pressed="false">SQL</button>
                 </nav>
             </div>
 
@@ -208,7 +201,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                     $type = $entry['type'];
                     $login = $entry['login'];
                     ?>
-                    <article class="radius-log-entry type-<?php echo radius_escape($type); ?>" data-key="<?php echo radius_escape($entry['key']); ?>" data-search="<?php echo radius_escape($entry['search']); ?>" data-nas="<?php echo radius_escape($entry['nas']); ?>">
+                    <article class="radius-log-entry type-<?php echo radius_escape($type); ?>" data-key="<?php echo radius_escape($entry['key']); ?>" data-search="<?php echo radius_escape($entry['search']); ?>" data-nas="<?php echo radius_escape($entry['nas']); ?>" data-log-type="<?php echo radius_escape($type); ?>">
                         <div class="radius-log-meta">
                             <span class="radius-log-badge"><?php echo radius_escape($typeLabels[$type]); ?></span>
                             <?php if ($login !== '') { ?>
@@ -225,7 +218,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         <div id="radiusNoSearchResults" class="radius-empty" hidden>
             <i class="bi bi-search"></i>
             <strong>Nenhuma linha corresponde à busca</strong>
-            <span>Ajuste a pesquisa ou selecione outro NAS para mostrar os eventos.</span>
+            <span>Ajuste as categorias, a pesquisa ou o NAS para mostrar os eventos.</span>
         </div>
     </section>
 </main>
@@ -244,6 +237,11 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     var errorText = document.getElementById('radiusLogErrorText');
     var cleanButton = document.getElementById('cleanSessionsButton');
     var refreshNowButton = document.getElementById('refreshNowButton');
+    var typeFilterButtons = document.getElementsByClassName('radius-filter-button');
+    var filterableLogTypes = ['conectados', 'erros', 'multiplos', 'sql'];
+    var selectedLogTypes = {};
+    var showAllLogTypes = true;
+    var typeFilterStorageKey = 'radius_log_type_filters_v1';
     var autoRefreshRunning = <?php echo $autoRefreshRunning ? 'true' : 'false'; ?>;
     var scrollToLogsOnLoad = <?php echo $scrollToLogsOnLoad ? 'true' : 'false'; ?>;
     var refreshTimer = null;
@@ -257,6 +255,83 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         if (element) {
             element.textContent = value;
         }
+    }
+
+    function loadTypeFilterState() {
+        var storedState;
+        var parsedState;
+        var index;
+
+        try {
+            storedState = window.sessionStorage.getItem(typeFilterStorageKey);
+            parsedState = storedState ? JSON.parse(storedState) : null;
+        } catch (error) {
+            parsedState = null;
+        }
+
+        showAllLogTypes = !parsedState || parsedState.all !== false;
+        selectedLogTypes = {};
+        if (!showAllLogTypes && parsedState && Array.isArray(parsedState.types)) {
+            for (index = 0; index < filterableLogTypes.length; index++) {
+                if (parsedState.types.indexOf(filterableLogTypes[index]) !== -1) {
+                    selectedLogTypes[filterableLogTypes[index]] = true;
+                }
+            }
+        }
+    }
+
+    function saveTypeFilterState() {
+        var selectedTypes = [];
+        var index;
+
+        for (index = 0; index < filterableLogTypes.length; index++) {
+            if (selectedLogTypes[filterableLogTypes[index]] === true) {
+                selectedTypes.push(filterableLogTypes[index]);
+            }
+        }
+
+        try {
+            window.sessionStorage.setItem(typeFilterStorageKey, JSON.stringify({
+                all: showAllLogTypes,
+                types: selectedTypes
+            }));
+        } catch (error) {
+            return;
+        }
+    }
+
+    function updateTypeFilterButtons() {
+        var index;
+        var button;
+        var type;
+        var active;
+
+        for (index = 0; index < typeFilterButtons.length; index++) {
+            button = typeFilterButtons[index];
+            type = button.getAttribute('data-log-type');
+            active = type === 'todos' ? showAllLogTypes : selectedLogTypes[type] === true;
+            button.className = 'radius-filter-button' + (active ? ' active' : '');
+            button.setAttribute('aria-pressed', active ? 'true' : 'false');
+        }
+    }
+
+    function toggleTypeFilter(type) {
+        if (type === 'todos') {
+            showAllLogTypes = !showAllLogTypes;
+            selectedLogTypes = {};
+        } else if (showAllLogTypes) {
+            showAllLogTypes = false;
+            selectedLogTypes = {};
+            selectedLogTypes[type] = true;
+        } else if (selectedLogTypes[type] === true) {
+            delete selectedLogTypes[type];
+        } else {
+            selectedLogTypes[type] = true;
+        }
+
+        saveTypeFilterState();
+        updateTypeFilterButtons();
+        applySearchFilter();
     }
 
     function captureScrollAnchor() {
@@ -320,6 +395,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         article.setAttribute('data-key', entry.key);
         article.setAttribute('data-search', entry.search);
         article.setAttribute('data-nas', entry.nas || '');
+        article.setAttribute('data-log-type', entry.type);
 
         meta.className = 'radius-log-meta';
         badge.className = 'radius-log-badge';
@@ -404,10 +480,15 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         var index;
         var matches;
         var entryNas;
+        var entryType;
+        var typeMatches;
 
         for (index = 0; index < entries.length; index++) {
             entryNas = entries[index].getAttribute('data-nas') || '';
-            matches = (term === '' || entries[index].getAttribute('data-search').indexOf(term) !== -1)
+            entryType = entries[index].getAttribute('data-log-type') || 'outros';
+            typeMatches = showAllLogTypes || selectedLogTypes[entryType] === true;
+            matches = typeMatches
+                && (term === '' || entries[index].getAttribute('data-search').indexOf(term) !== -1)
                 && (selectedNas === '' || entryNas === selectedNas);
             entries[index].style.display = matches ? '' : 'none';
             if (matches) {
@@ -418,6 +499,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         if (visibleCount) {
             visibleCount.textContent = visible + ' visíveis';
         }
+        setText('eventCount', visible + ' registro(s) exibido(s)');
         if (noResults) {
             noResults.hidden = entries.length === 0 || visible !== 0;
         }
@@ -508,6 +590,12 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         nasFilter.addEventListener('change', applySearchFilter);
     }
 
+    for (var typeButtonIndex = 0; typeButtonIndex < typeFilterButtons.length; typeButtonIndex++) {
+        typeFilterButtons[typeButtonIndex].addEventListener('click', function () {
+            toggleTypeFilter(this.getAttribute('data-log-type'));
+        });
+    }
+
     if (refreshNowButton) {
         refreshNowButton.addEventListener('click', requestLogs);
     }
@@ -545,6 +633,8 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         });
     }
 
+    loadTypeFilterState();
+    updateTypeFilterButtons();
     refreshNasOptions();
     applySearchFilter();
     scheduleRefresh();
