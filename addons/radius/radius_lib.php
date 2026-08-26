@@ -91,9 +91,23 @@ function radius_filter_url($filter, $lines)
 
 function radius_client_url($login)
 {
+    return 'client_target.php?' . http_build_query(array('login' => $login));
+}
+
+function radius_client_connections_url($login)
+{
+    return '/admin/relatorios_u.hhvm?' . http_build_query(array(
+        'login' => $login,
+    ));
+}
+
+function radius_client_search_url($login)
+{
     return '/admin/clientes.hhvm?' . http_build_query(array(
+        'tipo' => 'todos',
         'busca' => $login,
         'campo' => 'login',
+        'IR' => 'IR',
     ));
 }
 

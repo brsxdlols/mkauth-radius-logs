@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-VERSION=4.3.8
+VERSION=4.3.9
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 SOURCE_DIR="$ROOT_DIR/addons/radius"
@@ -171,6 +171,7 @@ MENU_SNIPPET
 [ -f "$CORE_ADDONS_CLASS" ] || fail "integracao de addons do MK-Auth nao encontrada: $CORE_ADDONS_CLASS"
 [ -f "$SOURCE_DIR/index.php" ] || fail "pacote incompleto: index.php ausente"
 [ -f "$SOURCE_DIR/logs_data.php" ] || fail "pacote incompleto: logs_data.php ausente"
+[ -f "$SOURCE_DIR/client_target.php" ] || fail "pacote incompleto: client_target.php ausente"
 
 case "$TARGET_DIR" in
     */admin/addons/radius) ;;
@@ -208,6 +209,7 @@ fi
 php -l "$TARGET_DIR/index.php" >/dev/null
 php -l "$TARGET_DIR/radius_lib.php" >/dev/null
 php -l "$TARGET_DIR/logs_data.php" >/dev/null
+php -l "$TARGET_DIR/client_target.php" >/dev/null
 php -l "$TARGET_DIR/run_script.hhvm" >/dev/null
 
 if [ -z "$LOG_FILE" ]; then

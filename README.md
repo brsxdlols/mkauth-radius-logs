@@ -12,7 +12,8 @@ Addon para acompanhar o log do FreeRADIUS dentro do painel administrativo do MK-
 - início automático e rolagem até os eventos ao abrir o addon ou clicar em **Atualizar auto**;
 - atualização AJAX a cada 2 segundos, sem recarregar a página;
 - preservação da linha e da posição de rolagem durante a atualização;
-- login clicável para a busca nativa de clientes do MK-Auth;
+- login clicável para abrir diretamente o relatório de conexões quando o cliente existir;
+- pesquisa nativa por login como alternativa quando o cliente não for encontrado;
 - saída do log protegida com escape de HTML;
 - limpeza de sessões presas protegida por sessão administrativa, POST e token CSRF;
 - conexão com o banco reutilizada do próprio MK-Auth, sem credenciais no addon;
@@ -46,7 +47,7 @@ O addon será instalado em:
 Antes de substituir uma instalação existente, o instalador cria um backup em:
 
 ```text
-/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.8
+/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.9
 ```
 
 ## Instalação pelo GitHub
@@ -62,12 +63,14 @@ curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/i
 Informe o diretório de backup criado pelo instalador:
 
 ```sh
-sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.8
+sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.9
 ```
 
 ## Funcionamento da atualização
 
 O navegador consulta `logs_data.php` a cada 2 segundos e substitui somente os eventos e contadores. A página completa, o menu do MK-Auth e os controles não são recarregados. Uma nova consulta só é iniciada depois que a anterior termina.
+
+Ao clicar em um login, `client_target.php` verifica o login exato em `sis_cliente`. Se o cliente existir, abre o relatório nativo `relatorios_u.hhvm`; se não existir, abre a busca de clientes preenchida com o login. A consulta acontece somente no clique, não durante as atualizações automáticas do log.
 
 Os botões **Conectados**, **Incorretos**, **Duplicados** e **SQL** podem ser combinados livremente. O botão **Todos** restaura a exibição completa, incluindo eventos informativos. A escolha fica preservada na aba durante as atualizações AJAX e recarregamentos.
 
@@ -83,7 +86,7 @@ O botão **Limpar sessões presas** exclui do `radacct` apenas registros sem `ac
 
 ## Segurança
 
-- `index.php`, `logs_data.php` e `run_script.hhvm` carregam a autenticação nativa do MK-Auth.
+- `index.php`, `logs_data.php`, `client_target.php` e `run_script.hhvm` carregam a autenticação nativa do MK-Auth.
 - A limpeza exige token CSRF associado à sessão administrativa.
 - Linhas do FreeRADIUS são inseridas no DOM como texto, não como HTML.
 - O addon não contém senha do MySQL. A limpeza usa `/opt/mk-auth/include/conexao.php`.

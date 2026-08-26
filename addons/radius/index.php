@@ -77,7 +77,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
         <div>
             <div class="radius-eyebrow">Monitoramento em tempo real</div>
             <h1><i class="bi bi-activity"></i> <?php echo radius_escape($manifestName); ?></h1>
-            <p>Autenticações do FreeRADIUS com acesso rápido à pesquisa de clientes.</p>
+            <p>Autenticações do FreeRADIUS com acesso rápido às conexões dos clientes.</p>
         </div>
         <div class="radius-version">v<?php echo radius_escape($manifestVersion); ?></div>
     </section>
@@ -205,7 +205,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                         <div class="radius-log-meta">
                             <span class="radius-log-badge"><?php echo radius_escape($typeLabels[$type]); ?></span>
                             <?php if ($login !== '') { ?>
-                                <a class="radius-client-link" href="<?php echo radius_escape($entry['client_url']); ?>" target="_blank" rel="noopener" title="Pesquisar este login nos clientes do MK-Auth">
+                                <a class="radius-client-link" href="<?php echo radius_escape($entry['client_url']); ?>" target="_blank" rel="noopener" title="Abrir conexões deste cliente; se não existir, pesquisar o login">
                                     <i class="bi bi-person-search"></i>
                                     <?php echo radius_escape($login); ?>
                                 </a>
@@ -408,7 +408,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
             clientLink.href = entry.client_url;
             clientLink.target = '_blank';
             clientLink.rel = 'noopener';
-            clientLink.title = 'Pesquisar este login nos clientes do MK-Auth';
+            clientLink.title = 'Abrir conexões deste cliente; se não existir, pesquisar o login';
 
             clientIcon = document.createElement('i');
             clientIcon.className = 'bi bi-person-search';
