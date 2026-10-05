@@ -110,10 +110,10 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
             <div>
                 <span class="radius-label">Exibindo</span>
                 <nav class="radius-filters" aria-label="Filtros dos logs">
-                    <button class="radius-filter-button active" type="button" data-log-type="todos" aria-pressed="true">Todos</button>
-                    <button class="radius-filter-button" type="button" data-log-type="conectados" aria-pressed="false">Conectados</button>
-                    <button class="radius-filter-button" type="button" data-log-type="erros" aria-pressed="false">Incorretos</button>
-                    <button class="radius-filter-button" type="button" data-log-type="multiplos" aria-pressed="false">Duplicados</button>
+                    <button class="radius-filter-button" type="button" data-log-type="todos" aria-pressed="false">Todos</button>
+                    <button class="radius-filter-button active" type="button" data-log-type="conectados" aria-pressed="true">Conectados</button>
+                    <button class="radius-filter-button active" type="button" data-log-type="erros" aria-pressed="true">Incorretos</button>
+                    <button class="radius-filter-button active" type="button" data-log-type="multiplos" aria-pressed="true">Duplicados</button>
                     <button class="radius-filter-button" type="button" data-log-type="sql" aria-pressed="false">SQL</button>
                 </nav>
             </div>
@@ -239,9 +239,10 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     var refreshNowButton = document.getElementById('refreshNowButton');
     var typeFilterButtons = document.getElementsByClassName('radius-filter-button');
     var filterableLogTypes = ['conectados', 'erros', 'multiplos', 'sql'];
+    var defaultLogTypes = ['conectados', 'erros', 'multiplos'];
     var selectedLogTypes = {};
-    var showAllLogTypes = true;
-    var typeFilterStorageKey = 'radius_log_type_filters_v1';
+    var showAllLogTypes = false;
+    var typeFilterStorageKey = 'radius_log_type_filters_v2';
     var autoRefreshRunning = <?php echo $autoRefreshRunning ? 'true' : 'false'; ?>;
     var scrollToLogsOnLoad = <?php echo $scrollToLogsOnLoad ? 'true' : 'false'; ?>;
     var refreshTimer = null;
@@ -269,9 +270,13 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
             parsedState = null;
         }
 
-        showAllLogTypes = !parsedState || parsedState.all !== false;
+        showAllLogTypes = parsedState ? parsedState.all !== false : false;
         selectedLogTypes = {};
-        if (!showAllLogTypes && parsedState && Array.isArray(parsedState.types)) {
+        if (!parsedState) {
+            for (index = 0; index < defaultLogTypes.length; index++) {
+                selectedLogTypes[defaultLogTypes[index]] = true;
+            }
+        } else if (!showAllLogTypes && Array.isArray(parsedState.types)) {
             for (index = 0; index < filterableLogTypes.length; index++) {
                 if (parsedState.types.indexOf(filterableLogTypes[index]) !== -1) {
                     selectedLogTypes[filterableLogTypes[index]] = true;

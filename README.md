@@ -6,6 +6,7 @@ Addon para acompanhar o log do FreeRADIUS dentro do painel administrativo do MK-
 
 - painel responsivo com contadores de conexões, erros, duplicidades e alertas SQL;
 - filtros combináveis por tipo de evento e seleção de 50 a 2.000 linhas;
+- seleção inicial de Conectados, Incorretos e Duplicados, com SQL disponível sob demanda;
 - pesquisa instantânea por login, NAS, MAC ou mensagem;
 - seleção de NAS combinada com a pesquisa e preservada nas atualizações AJAX;
 - painel de eventos em estilo terminal, com fundo preto e cores por tipo de log;
@@ -47,7 +48,7 @@ O addon será instalado em:
 Antes de substituir uma instalação existente, o instalador cria um backup em:
 
 ```text
-/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.9
+/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.10
 ```
 
 ## Instalação pelo GitHub
@@ -63,7 +64,7 @@ curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/i
 Informe o diretório de backup criado pelo instalador:
 
 ```sh
-sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.9
+sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.10
 ```
 
 ## Funcionamento da atualização
@@ -72,7 +73,7 @@ O navegador consulta `logs_data.php` a cada 2 segundos e substitui somente os ev
 
 Ao clicar em um login, `client_target.php` verifica o login exato em `sis_cliente`. Se o cliente existir, abre o relatório nativo `relatorios_u.hhvm`; se não existir, abre a busca de clientes preenchida com o login. A consulta acontece somente no clique, não durante as atualizações automáticas do log.
 
-Os botões **Conectados**, **Incorretos**, **Duplicados** e **SQL** podem ser combinados livremente. O botão **Todos** restaura a exibição completa, incluindo eventos informativos. A escolha fica preservada na aba durante as atualizações AJAX e recarregamentos.
+Por padrão, **Conectados**, **Incorretos** e **Duplicados** iniciam selecionados; **Todos** e **SQL** começam desmarcados. Os quatro tipos podem ser combinados livremente, e o botão **Todos** restaura a exibição completa, incluindo eventos informativos. A escolha fica preservada na aba durante as atualizações AJAX e recarregamentos.
 
 Durante a instalação, o script procura o `addon.js` usado pelo MK-Auth, remove somente registros `add_menu` equivalentes do Radius e grava um único atalho **Radius Logs** no menu **Provedor**. O arquivo original é incluído no backup antes da consolidação.
 
