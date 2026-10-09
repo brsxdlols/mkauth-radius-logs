@@ -162,6 +162,9 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                 <button id="refreshNowButton" class="radius-button radius-button-secondary" type="button">
                     <i class="bi bi-arrow-clockwise"></i> Atualizar agora
                 </button>
+                <a class="radius-button radius-button-secondary" href="live.php" target="_blank" rel="noopener" title="Abrir monitor RADIUS em uma janela separada">
+                    <i class="bi bi-broadcast"></i> Monitor ao vivo
+                </a>
                 <button id="cleanSessionsButton" class="radius-button radius-button-clean" type="button" title="Remove do radacct os registros sem horário de encerramento. Não desconecta clientes no NAS.">
                     <i class="bi bi-trash"></i> Limpar sessões presas
                 </button>
@@ -653,5 +656,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     }
 }());
 </script>
+<script src="compact_notice.js?v=440"></script>
+<script src="client_status.js?v=440"></script>
 </body>
 </html>

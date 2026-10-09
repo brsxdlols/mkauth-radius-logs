@@ -15,6 +15,12 @@ Addon para acompanhar o log do FreeRADIUS dentro do painel administrativo do MK-
 - preservação da linha e da posição de rolagem durante a atualização;
 - login clicável para abrir diretamente o relatório de conexões quando o cliente existir;
 - pesquisa nativa por login como alternativa quando o cliente não for encontrado;
+- senhas presentes em linhas do FreeRADIUS ocultadas antes de chegar ao navegador;
+- identificação de logins principais e adicionais pelo cliente proprietário;
+- indicadores de cliente desativado ou bloqueado, respeitando os grupos permitidos ao operador;
+- configuração persistente para ocultar logins de clientes desativados;
+- monitor ao vivo em janela separada, com atualização a cada 3 segundos;
+- busca histórica sob demanda no log atual e em até 14 rotações, limitada a 64 MB ou 2 segundos;
 - saída do log protegida com escape de HTML;
 - limpeza de sessões presas protegida por sessão administrativa, POST e token CSRF;
 - conexão com o banco reutilizada do próprio MK-Auth, sem credenciais no addon;
@@ -48,7 +54,7 @@ O addon será instalado em:
 Antes de substituir uma instalação existente, o instalador cria um backup em:
 
 ```text
-/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.10
+/root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.4.0
 ```
 
 ## Instalação pelo GitHub
@@ -64,7 +70,7 @@ curl -fsSL https://raw.githubusercontent.com/brsxdlols/mkauth-radius-logs/main/i
 Informe o diretório de backup criado pelo instalador:
 
 ```sh
-sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.10
+sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.4.0
 ```
 
 ## Funcionamento da atualização
@@ -72,6 +78,10 @@ sh installers/rollback.sh /root/backups/mkauth-radius-logs-AAAAmmdd-HHMMSS-v4.3.
 O navegador consulta `logs_data.php` a cada 2 segundos e substitui somente os eventos e contadores. A página completa, o menu do MK-Auth e os controles não são recarregados. Uma nova consulta só é iniciada depois que a anterior termina.
 
 Ao clicar em um login, `client_target.php` verifica o login exato em `sis_cliente`. Se o cliente existir, abre o relatório nativo `relatorios_u.hhvm`; se não existir, abre a busca de clientes preenchida com o login. A consulta acontece somente no clique, não durante as atualizações automáticas do log.
+
+O botão **Monitor ao vivo** abre `live.php` em uma janela separada. O monitor geral mantém os filtros essenciais ativos e permite habilitar SQL e informações sob demanda. Quando aberto para um login específico, pode procurar o último evento também nos arquivos rotacionados, dentro dos limites seguros documentados acima.
+
+`client_status.php` resolve logins principais e adicionais no banco do MK-Auth e retorna somente os indicadores necessários. O operador pode usar a engrenagem ao lado dos filtros para ocultar clientes desativados; a preferência fica salva no navegador daquele MK-Auth.
 
 Por padrão, **Conectados**, **Incorretos** e **Duplicados** iniciam selecionados; **Todos** e **SQL** começam desmarcados. Os quatro tipos podem ser combinados livremente, e o botão **Todos** restaura a exibição completa, incluindo eventos informativos. A escolha fica preservada na aba durante as atualizações AJAX e recarregamentos.
 
@@ -87,7 +97,9 @@ O botão **Limpar sessões presas** exclui do `radacct` apenas registros sem `ac
 
 ## Segurança
 
-- `index.php`, `logs_data.php`, `client_target.php` e `run_script.hhvm` carregam a autenticação nativa do MK-Auth.
+- `index.php`, `logs_data.php`, `client_target.php`, `client_status.php`, `live.php` e `run_script.hhvm` carregam a autenticação nativa do MK-Auth.
+- Consultas de status e do monitor usam prepared statements e respeitam `cli_grupos` do operador.
+- Credenciais que eventualmente apareçam no formato `[login/senha]` ou em atributos de senha são substituídas por `***` antes da saída.
 - A limpeza exige token CSRF associado à sessão administrativa.
 - Linhas do FreeRADIUS são inseridas no DOM como texto, não como HTML.
 - O addon não contém senha do MySQL. A limpeza usa `/opt/mk-auth/include/conexao.php`.

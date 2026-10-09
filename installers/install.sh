@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-VERSION=4.3.10
+VERSION=4.4.0
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 SOURCE_DIR="$ROOT_DIR/addons/radius"
@@ -172,6 +172,12 @@ MENU_SNIPPET
 [ -f "$SOURCE_DIR/index.php" ] || fail "pacote incompleto: index.php ausente"
 [ -f "$SOURCE_DIR/logs_data.php" ] || fail "pacote incompleto: logs_data.php ausente"
 [ -f "$SOURCE_DIR/client_target.php" ] || fail "pacote incompleto: client_target.php ausente"
+[ -f "$SOURCE_DIR/client_links.php" ] || fail "pacote incompleto: client_links.php ausente"
+[ -f "$SOURCE_DIR/client_status.php" ] || fail "pacote incompleto: client_status.php ausente"
+[ -f "$SOURCE_DIR/client_status.js" ] || fail "pacote incompleto: client_status.js ausente"
+[ -f "$SOURCE_DIR/compact_notice.js" ] || fail "pacote incompleto: compact_notice.js ausente"
+[ -f "$SOURCE_DIR/history.php" ] || fail "pacote incompleto: history.php ausente"
+[ -f "$SOURCE_DIR/live.php" ] || fail "pacote incompleto: live.php ausente"
 
 case "$TARGET_DIR" in
     */admin/addons/radius) ;;
@@ -210,6 +216,10 @@ php -l "$TARGET_DIR/index.php" >/dev/null
 php -l "$TARGET_DIR/radius_lib.php" >/dev/null
 php -l "$TARGET_DIR/logs_data.php" >/dev/null
 php -l "$TARGET_DIR/client_target.php" >/dev/null
+php -l "$TARGET_DIR/client_links.php" >/dev/null
+php -l "$TARGET_DIR/client_status.php" >/dev/null
+php -l "$TARGET_DIR/history.php" >/dev/null
+php -l "$TARGET_DIR/live.php" >/dev/null
 php -l "$TARGET_DIR/run_script.hhvm" >/dev/null
 
 if [ -z "$LOG_FILE" ]; then

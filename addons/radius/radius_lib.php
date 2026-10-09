@@ -50,7 +50,7 @@ function radius_log_type($line)
 
 function radius_extract_login($line)
 {
-    if (preg_match('/\[([^\/\]]+)\/[^\]]*\]/', $line, $matches)) {
+    if (preg_match('/\b(?:Login OK|Login incorrect|Multiple logins)[^\r\n]*?\[([^\/\]]+)(?:\/[^\]]*)?\]/i', $line, $matches)) {
         return trim($matches[1]);
     }
 
@@ -192,6 +192,8 @@ function radius_read_logs($filter, $linesLimit)
             continue;
         }
 
+        $line = preg_replace('/\[([^\/\]]+)\/[^\]]*\]/', '[$1/***]', $line);
+        $line = preg_replace('/((?:User-Password|Cleartext-Password|CHAP-Password)\s*[:=]\s*)("[^"]*"|\S+)/i', '$1***', $line);
         $entries[] = array(
             'key' => sha1($line),
             'type' => $type,
