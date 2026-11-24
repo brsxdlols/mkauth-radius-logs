@@ -16,11 +16,11 @@ if [ "$(id -u)" -ne 0 ]; then
 fi
 
 if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "https://github.com/$REPOSITORY/archive/refs/heads/$BRANCH.tar.gz" \
+    curl -fsSL --retry 3 --connect-timeout 15 --max-time 300 -H 'Cache-Control: no-cache' "https://codeload.github.com/$REPOSITORY/tar.gz/refs/heads/$BRANCH?cache=$(date +%s)" \
         -o "$TMP_DIR/source.tar.gz"
 elif command -v wget >/dev/null 2>&1; then
-    wget -qO "$TMP_DIR/source.tar.gz" \
-        "https://github.com/$REPOSITORY/archive/refs/heads/$BRANCH.tar.gz"
+    wget --no-cache --timeout=30 --tries=3 -qO "$TMP_DIR/source.tar.gz" \
+        "https://codeload.github.com/$REPOSITORY/tar.gz/refs/heads/$BRANCH?cache=$(date +%s)"
 else
     echo "Instale curl ou wget para continuar." >&2
     exit 1
@@ -33,4 +33,5 @@ source_dir=$(find "$TMP_DIR" -mindepth 1 -maxdepth 1 -type d | head -1)
     exit 1
 }
 
+find "$source_dir/installers" -type f -name "*.sh" -exec sed -i 's/\r$//' {} +
 sh "$source_dir/installers/install.sh"

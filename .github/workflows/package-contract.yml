@@ -1,0 +1,9 @@
+name: Standalone package contract
+on: [push, pull_request]
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 tests/test_source_contract.py
+      - run: sh -n installers/install.sh && sh -n installers/github-install.sh && sh -n installers/rollback.sh

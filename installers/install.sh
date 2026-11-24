@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 
-VERSION=4.4.0
+VERSION=4.5.0
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd)
 SOURCE_DIR="$ROOT_DIR/addons/radius"
@@ -23,28 +23,6 @@ fail() {
 
 warn() {
     echo "AVISO: $*" >&2
-}
-
-find_addon_js() {
-    for file in \
-        "$ADDONS_DIR/addon.js" \
-        "$ADMIN_DIR/scripts/addon.js" \
-        "$ADMIN_DIR/addon.js" \
-        "$ADMIN_DIR/assets/js/addon.js"
-    do
-        if [ -f "$file" ]; then
-            printf '%s\n' "$file"
-            return 0
-        fi
-    done
-
-    found=$(find "$ADMIN_DIR" -type f -name addon.js 2>/dev/null | head -1)
-    if [ -n "$found" ]; then
-        printf '%s\n' "$found"
-        return 0
-    fi
-
-    return 1
 }
 
 find_radius_log() {
@@ -119,53 +97,6 @@ grant_log_access() {
     return 1
 }
 
-consolidate_radius_shortcut() {
-    menu_file=$1
-    menu_tmp=$(mktemp /tmp/mkauth-radius-addon-js.XXXXXX)
-
-    awk '
-        BEGIN {
-            count = 0
-            last = 0
-        }
-        {
-            line = tolower($0)
-            trimmed = line
-            sub(/^[[:space:]]+/, "", trimmed)
-
-            if (index(line, "radius logs inicio") > 0) {
-                next
-            }
-            if (index(line, "radius logs fim") > 0) {
-                next
-            }
-            if (trimmed !~ /^\/\// && index(line, "add_menu.") > 0 && index(line, "addons/radius") > 0) {
-                next
-            }
-
-            lines[++count] = $0
-            if ($0 !~ /^[[:space:]]*$/) {
-                last = count
-            }
-        }
-        END {
-            for (i = 1; i <= last; i++) {
-                print lines[i]
-            }
-        }
-    ' "$menu_file" > "$menu_tmp"
-
-    cat "$menu_tmp" > "$menu_file"
-    rm -f "$menu_tmp"
-
-    cat >> "$menu_file" <<'MENU_SNIPPET'
-
-// RADIUS LOGS INICIO
-add_menu.provedor('{"plink": "' + minha_url + 'addons/radius/", "ptext": "<b>Radius Logs</b>"}');
-// RADIUS LOGS FIM
-MENU_SNIPPET
-}
-
 [ "$(id -u)" -eq 0 ] || fail "execute como root"
 [ -d "$ADMIN_DIR" ] || fail "diretorio administrativo do MK-Auth nao encontrado: $ADMIN_DIR"
 [ -f "$CORE_ADDONS_CLASS" ] || fail "integracao de addons do MK-Auth nao encontrada: $CORE_ADDONS_CLASS"
@@ -179,48 +110,22 @@ MENU_SNIPPET
 [ -f "$SOURCE_DIR/history.php" ] || fail "pacote incompleto: history.php ausente"
 [ -f "$SOURCE_DIR/live.php" ] || fail "pacote incompleto: live.php ausente"
 
+for file in access.php standalone_access.php current_state.php preferences.php connection_settings_api.php connection_settings_model.php radius_log_reader.php package_features.json assets/connection_settings.js assets/connection_settings.css assets/radius_preferences.js; do
+    [ -f "$SOURCE_DIR/$file" ] || fail "pacote incompleto: $file ausente"
+done
+
 case "$TARGET_DIR" in
     */admin/addons/radius) ;;
     *) fail "destino inesperado; instalacao interrompida: $TARGET_DIR" ;;
 esac
 
-ADDON_JS=$(find_addon_js || true)
 LOG_FILE=$(find_radius_log || true)
 
-mkdir -p "$BACKUP_DIR" "$ADDONS_DIR"
-if [ -d "$TARGET_DIR" ]; then
-    cp -a "$TARGET_DIR" "$BACKUP_DIR/radius"
-fi
-if [ -n "$ADDON_JS" ]; then
-    cp -a "$ADDON_JS" "$BACKUP_DIR/addon.js"
-    printf '%s\n' "$ADDON_JS" > "$BACKUP_DIR/addon_js.path"
-fi
-
-rm -rf "$TARGET_DIR"
-mkdir -p "$TARGET_DIR"
-cp -a "$SOURCE_DIR"/. "$TARGET_DIR"/
-ln -s "$CORE_ADDONS_CLASS" "$TARGET_DIR/addons.class.php"
-
-chown -R "root:$WEB_USER" "$TARGET_DIR" 2>/dev/null || true
-find "$TARGET_DIR" -type d -exec chmod 0755 {} \;
-find "$TARGET_DIR" -type f -exec chmod 0644 {} \;
-
-if [ -n "$ADDON_JS" ]; then
-    consolidate_radius_shortcut "$ADDON_JS"
-    echo "Menu: atalhos Radius consolidados em um unico item."
-else
-    warn "addon.js nao encontrado; registre manualmente o atalho para addons/radius/"
-fi
-
-php -l "$TARGET_DIR/index.php" >/dev/null
-php -l "$TARGET_DIR/radius_lib.php" >/dev/null
-php -l "$TARGET_DIR/logs_data.php" >/dev/null
-php -l "$TARGET_DIR/client_target.php" >/dev/null
-php -l "$TARGET_DIR/client_links.php" >/dev/null
-php -l "$TARGET_DIR/client_status.php" >/dev/null
-php -l "$TARGET_DIR/history.php" >/dev/null
-php -l "$TARGET_DIR/live.php" >/dev/null
-php -l "$TARGET_DIR/run_script.hhvm" >/dev/null
+command -v python3 >/dev/null 2>&1 || fail "python3 e necessario para instalar o menu e validar os arquivos"
+mkdir -p "$BACKUP_ROOT"
+BACKUP_DIR=$(mktemp -d "$BACKUP_ROOT/mkauth-radius-logs-$STAMP-v$VERSION-XXXXXX")
+chmod 0700 "$BACKUP_DIR"
+python3 "$SCRIPT_DIR/deploy.py" "$SOURCE_DIR" "$ADMIN_DIR" "$CORE_ADDONS_CLASS" "$BACKUP_DIR" "$WEB_USER" "$LOG_FILE"
 
 if [ -z "$LOG_FILE" ]; then
     warn "nenhum arquivo de log conhecido do FreeRADIUS foi encontrado"
@@ -234,6 +139,4 @@ echo "Instalacao concluida."
 echo "Versao: $VERSION"
 echo "Addon: $TARGET_DIR"
 echo "Backup: $BACKUP_DIR"
-if [ -n "$ADDON_JS" ]; then
-    echo "Menu: $ADDON_JS"
-fi
+echo "Menu: Provedor → LOG RADIUS (carregadores administrativos independentes)."

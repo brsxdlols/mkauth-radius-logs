@@ -1,5 +1,5 @@
 <?php
-include('addons.class.php');
+require_once __DIR__.'/standalone_access.php';
 require_once('radius_lib.php');
 
 $filter = 'todos';
@@ -52,7 +52,7 @@ natcasesort($nasOptions);
 $nasOptions = array_values($nasOptions);
 $typeLabels = radius_type_labels();
 $manifestName = isset($Manifest->name) ? $Manifest->name : 'Radius Logs';
-$manifestVersion = isset($Manifest->version) ? $Manifest->version : '';
+$manifestVersion = isset($Manifest->version) ? $Manifest->version : '4.5.0';
 $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
 ?>
 <!DOCTYPE html>
@@ -65,7 +65,7 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     <link href="../../estilos/font-awesome.css" rel="stylesheet" type="text/css">
     <link href="../../estilos/bi-icons.css" rel="stylesheet" type="text/css">
     <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
-    <link href="radius.css?v=438" rel="stylesheet" type="text/css">
+    <link href="radius.css?v=450" rel="stylesheet" type="text/css">
     <script src="../../scripts/jquery.js"></script>
     <script src="../../scripts/mk-auth.js"></script>
 </head>
@@ -165,9 +165,6 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
                 <a class="radius-button radius-button-secondary" href="live.php" target="_blank" rel="noopener" title="Abrir monitor RADIUS em uma janela separada">
                     <i class="bi bi-broadcast"></i> Monitor ao vivo
                 </a>
-                <button id="cleanSessionsButton" class="radius-button radius-button-clean" type="button" title="Remove do radacct os registros sem horário de encerramento. Não desconecta clientes no NAS.">
-                    <i class="bi bi-trash"></i> Limpar sessões presas
-                </button>
             </div>
         </div>
 
@@ -656,7 +653,10 @@ $htmlClass = isset($_SESSION['MM_Usuario']) ? '' : 'has-navbar-fixed-top';
     }
 }());
 </script>
-<script src="compact_notice.js?v=440"></script>
-<script src="client_status.js?v=440"></script>
+<script src="compact_notice.js?v=450"></script>
+<link rel="stylesheet" href="assets/connection_settings.css?v=450">
+<script src="assets/connection_settings.js?v=450"></script>
+<script src="assets/radius_preferences.js?v=450"></script>
+<script src="client_status.js?v=450"></script>
 </body>
 </html>

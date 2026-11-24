@@ -1,5 +1,5 @@
 <?php
-include('addons.class.php');
+require_once __DIR__.'/standalone_access.php';
 require_once('radius_lib.php');
 
 $login = isset($_GET['login']) ? trim((string)$_GET['login']) : '';

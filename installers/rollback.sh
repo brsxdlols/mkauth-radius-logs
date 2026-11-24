@@ -13,6 +13,10 @@ fail() {
 
 [ "$(id -u)" -eq 0 ] || fail "execute como root"
 [ -n "$BACKUP_DIR" ] || fail "informe o diretorio de backup"
+if [ -f "$BACKUP_DIR/install-meta.json" ]; then
+    SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+    exec python3 "$SCRIPT_DIR/rollback.py" "$ADMIN_DIR" "$BACKUP_DIR"
+fi
 [ -d "$BACKUP_DIR/radius" ] || fail "backup do addon nao encontrado em $BACKUP_DIR/radius"
 
 case "$TARGET_DIR" in
